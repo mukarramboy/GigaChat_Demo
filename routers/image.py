@@ -16,7 +16,7 @@ async def image_handler(message: Message):
 
     try:
         result = replicate.run(
-            "stability-ai/stable-diffusion-3.5-large-turbo",
+            "google/imagen-4",
             input={
                 "prompt": message.text,
                 "aspect_ratio": "16:9",
