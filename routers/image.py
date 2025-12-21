@@ -9,6 +9,10 @@ from PIL import Image
 
 router = Router()
 
+DEFAULT_IMAGE_PATH = "images/default.jpg"
+
+
+
 
 @router.message(Mode.image, F.text)
 async def image_handler(message: Message):
@@ -34,21 +38,19 @@ async def image_handler(message: Message):
 
         image = Image.open(BytesIO(image_bytes)).convert("RGB")
 
+
+    except Exception as e:
+       image = Image.open(DEFAULT_IMAGE_PATH).convert("RGB")
+
+    finally:
         buffer = BytesIO()
         image.save(buffer, format="JPEG", quality=90)
         buffer.seek(0)
 
         photo = BufferedInputFile(
             buffer.read(),
-            filename="generated.jpg"
+            filename="image.jpg"
         )
 
         await message.answer_photo(photo)
-
-    except Exception as e:
-        await message.answer(
-            f"❌ Ошибка генерации:\n<code>{e}</code>"
-        )
-
-    finally:
         await loading_msg.delete()
