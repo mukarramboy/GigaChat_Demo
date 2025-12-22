@@ -12,8 +12,6 @@ router = Router()
 DEFAULT_IMAGE_PATH = "images/default.jpg"
 
 
-
-
 @router.message(Mode.image, F.text)
 async def image_handler(message: Message):
     loading_msg = await message.answer("🎨 Генерирую изображение...")

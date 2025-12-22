@@ -3,14 +3,13 @@ from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
 
 from config import BOT_TOKEN
-from routers import start, mode, text, image
+from routers import start, text, image
 
 async def main():
     bot = Bot(token=BOT_TOKEN, parse_mode=ParseMode.MARKDOWN)
     dp = Dispatcher()
 
     dp.include_router(start.router)
-    dp.include_router(mode.router)
     dp.include_router(text.router)
     dp.include_router(image.router)
 

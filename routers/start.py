@@ -1,49 +1,58 @@
-from aiogram import Router, F, Bot
+from aiogram import Router, F
 from aiogram.filters import CommandStart
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from aiogram.types import (
+    ReplyKeyboardMarkup,
+    KeyboardButton,
+    Message
+)
 from aiogram.fsm.context import FSMContext
+
 from states import Mode
 
 router = Router()
 
-@router.message(CommandStart())
-async def start_handler(message, state: FSMContext):
-    await state.clear()
 
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="💬 Генерировать текст", callback_data="cmd_text")],
-        [InlineKeyboardButton(text="🖼 Генерировать изображение", callback_data="cmd_image")],
-        [InlineKeyboardButton(text="🔄 Текущий режим", callback_data="cmd_mode")],
-    ])
-
-    await message.answer(
-        "👋 *AI Assistant Bot*\n\n"
-        "Выбери команду ниже, чтобы она была выполнена сразу:",
-        reply_markup=keyboard
+def main_menu():
+    return ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="💬 Текст"), KeyboardButton(text="🖼 Изображение")],
+            [KeyboardButton(text="📚 История"), KeyboardButton(text="🆕 Новый чат")],
+        ],
+        resize_keyboard=True,
+        input_field_placeholder="Сообщение..."
     )
 
-# Обработчики логики команд
-async def activate_text(bot: Bot, chat_id: int):
-    await bot.send_message(chat_id, "💬 Режим ТЕКСТА активирован")
 
-async def activate_image(bot: Bot, chat_id: int):
-    await bot.send_message(chat_id, "🖼 Режим ИЗОБРАЖЕНИЙ активирован")
+@router.message(CommandStart())
+async def start_handler(message: Message, state: FSMContext):
+    await state.clear()
+    await message.answer(
+        "👋 *AI Assistant Bot*\n\nВыбери действие:",
+        reply_markup=main_menu()
+    )
 
-async def activate_mode(bot: Bot, chat_id: int):
-    await bot.send_message(chat_id, "🔄 Текущий режим отображается")
 
-# Обработчик нажатий кнопок
-@router.callback_query(F.data.startswith("cmd_"))
-async def command_button_handler(callback: CallbackQuery, bot: Bot, state: FSMContext):
-    if callback.data == "cmd_text":
-        await state.set_state(Mode.text)
-        await callback.message.edit_text("💬 Режим *ТЕКСТ* активирован")
-    elif callback.data == "cmd_image":
-        await state.set_state(Mode.image)
-        await callback.message.edit_text("🖼 Режим *ИЗОБРАЖЕНИЙ* активирован")
-    elif callback.data == "cmd_mode":
-        current = await state.get_state()
-        await callback.message.edit_text(f"📌 Текущий режим: `{current}`")
-    
-    # убираем "часики" после нажатия
-    await callback.answer()
+@router.message(F.text == "💬 Текст")
+async def set_text_mode(message: Message, state: FSMContext):
+    await state.set_state(Mode.text)
+    await message.answer(
+        "💬 Режим *ТЕКСТ* активирован\n\nНапиши запрос:",
+        reply_markup=main_menu()
+    )
+
+
+@router.message(F.text == "🖼 Изображение")
+async def set_image_mode(message: Message, state: FSMContext):
+    await state.set_state(Mode.image)
+    await message.answer(
+        "🖼 Режим *ИЗОБРАЖЕНИЙ* активирован\n\nОпиши изображение:",
+        reply_markup=main_menu()
+    )
+
+@router.message(F.text == "🆕 Новый чат")
+async def new_chat(message: Message, state: FSMContext):
+    await state.clear()
+    await message.answer(
+        "🆕 Новый чат создан. Выбери режим:",
+        reply_markup=main_menu()
+    )
