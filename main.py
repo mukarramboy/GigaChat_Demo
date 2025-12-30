@@ -4,8 +4,10 @@ from aiogram.enums import ParseMode
 
 from config import BOT_TOKEN
 from routers import start, text, image
+from database.connect import init_db
 
 async def main():
+    await init_db()
     bot = Bot(token=BOT_TOKEN, parse_mode=ParseMode.MARKDOWN)
     dp = Dispatcher()
 
