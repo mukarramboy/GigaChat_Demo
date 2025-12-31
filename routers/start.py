@@ -36,8 +36,11 @@ def main_menu(user_id: int):
 async def start_handler(message: Message, state: FSMContext):
     await state.clear()
     user_id = message.from_user.id
+
     await save_user(user_id)
-    await create_chat(user_id)
+    chat_id = await create_chat(user_id)
+
+    await state.update_data(chat_id=chat_id)
 
     await message.answer(
         "👋 *AI Assistant Bot*\n\nВыбери действие:",
@@ -49,8 +52,8 @@ async def start_handler(message: Message, state: FSMContext):
 async def set_text_mode(message: Message, state: FSMContext):
     await state.set_state(Mode.text)
     user_id = message.from_user.id
-    
-    
+
+
     await message.answer(
         "💬 Режим *ТЕКСТ* активирован\n\nНапиши запрос:",
         reply_markup=main_menu(user_id)
@@ -70,8 +73,12 @@ async def set_image_mode(message: Message, state: FSMContext):
 async def new_chat(message: Message, state: FSMContext):
     await state.clear()
     user_id = message.from_user.id
-    await create_chat(user_id)
+
+    chat_id = await create_chat(user_id)
+    await state.update_data(chat_id=chat_id)
+
     await message.answer(
         "🆕 Новый чат создан. Выбери режим:",
         reply_markup=main_menu(user_id)
     )
+
