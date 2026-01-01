@@ -1,9 +1,12 @@
 from aiogram import Router, F
+from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from states import Mode
 from config import NANO_BANANA_API_KEY
 import aiohttp
 import asyncio
+
+from database.query import save_prompt
 
 router = Router()
 
@@ -40,10 +43,14 @@ async def wait_for_image(session, task_id, timeout=60):
 
 
 @router.message(Mode.image, F.text)
-async def image_handler(message: Message):
+async def image_handler(message: Message,state: FSMContext):
     """
     Хэндлер для генерации изображения по текстовому промту через Nanobanana.
     """
+
+    data = await state.get_data()
+    chat_id = data.get("chat_id")
+
     loading_msg = await message.answer("🎨 Генерирую изображение...")
 
     try:
@@ -71,6 +78,13 @@ async def image_handler(message: Message):
 
         # 3️⃣ Отправляем пользователю
         await message.answer_photo(photo=image_url, caption="🖼 Готово!")
+
+        await save_prompt(
+            chat_id=chat_id,
+            prompt_type="image",
+            prompt=message.text,
+            response=image_url
+        )
 
     except TimeoutError:
         await message.answer("⏱ Превышено время ожидания генерации изображения. Попробуйте снова.")
