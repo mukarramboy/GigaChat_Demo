@@ -1,29 +1,16 @@
 import asyncpg
-from config import DATABASE_URL
+from app.core.config import DATABASE_URL
 
 pool: asyncpg.Pool | None = None
 
 async def get_pool() -> asyncpg.Pool:
     global pool
     if pool is None:
-        pool = await asyncpg.create_pool(
-            user='postgres',
-            password='mirjahon2907',
-            database='gigachat_db',
-            host='localhost',
-            port=5432
-        )
+        pool = await asyncpg.create_pool(DATABASE_URL)
     return pool
 
 async def init_db():
-    global pool
-    pool = await asyncpg.create_pool(
-        user = 'postgres',
-        password = 'mirjahon2907',
-        database = 'gigachat_db',
-        host = 'localhost',
-        port = 5432
-    )
+    pool = await get_pool()
 
     async with pool.acquire() as conn:
 
@@ -63,4 +50,8 @@ async def init_db():
         );
         """)
 
-
+async def close_db():
+    global pool
+    if pool is not None:
+        await pool.close()
+        pool = None
