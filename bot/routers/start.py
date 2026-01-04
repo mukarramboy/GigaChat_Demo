@@ -23,7 +23,7 @@ def main_menu(user_id: int):
             [
                 KeyboardButton(
                     text ="🔗 Веб-версия",
-                    web_app=WebAppInfo(url=f"http://127.0.0.1:8000/api/v1/chats?user_id={user_id}")
+                    web_app=WebAppInfo(url=f"https://127.0.0.1:8000/api/v1/chats?user_id={user_id}")
                 )
             ]
         ],

@@ -1,13 +1,11 @@
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
-import os
-import replicate
 from states import Mode
-from config import REPLICATE_TOKEN
+from config import QWEN_API_TOKEN
 from database.query import save_prompt
+from bytez import Bytez
 
-os.environ["REPLICATE_API_TOKEN"] = REPLICATE_TOKEN
 router = Router()
 
 @router.message(Mode.text, F.text)
@@ -23,15 +21,24 @@ async def text_handler(message: Message, state: FSMContext):
         "max_length": 2048,
         "temperature": 0.1
     }
+    prompt = input_data["prompt"]
 
     try:
-        # 👇 указываем точную модель с конкретным version hash
-        output = replicate.run(
-            "replicate/flan-t5-xl:YOUR_VERSION_HASH",
-            input=input_data
-        )
+        sdk = Bytez(QWEN_API_TOKEN)
 
-        text = output if isinstance(output, str) else "".join(output)
+        # choose Qwen2.5-7B-Instruct
+        model = sdk.model("Qwen/Qwen2.5-7B-Instruct")
+
+        # send input to model
+        output = model.run([
+        {
+            "role": "user",
+            "content": prompt
+        }
+        ])
+
+        content = output.output["content"]
+        text = content.strip()
 
         if len(text) > 4096:
             text = text[:4093] + "..."
