@@ -84,3 +84,39 @@ async def get_chat_prompts(chat_id: int):
         }
         for row in rows
     ]
+
+
+async def delete_chat(chat_id: int, user_id: int) -> str:
+    """
+    Удаляет чат и все связанные промпты.
+    Возвращает:
+        - "deleted" если чат был удален
+        - "not_found" если чат не найден
+        - "forbidden" если чат принадлежит другому пользователю
+    """
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        # Проверяем существование чата и его владельца
+        chat = await conn.fetchrow(
+            "SELECT user_id FROM chats WHERE id = $1",
+            chat_id
+        )
+        
+        if chat is None:
+            return "not_found"
+        
+        if chat["user_id"] != user_id:
+            return "forbidden"
+        
+        async with conn.transaction():
+            # Сначала удаляем все промпты этого чата
+            await conn.execute(
+                "DELETE FROM prompts WHERE chat_id = $1",
+                chat_id
+            )
+            # Затем удаляем сам чат
+            await conn.execute(
+                "DELETE FROM chats WHERE id = $1",
+                chat_id
+            )
+            return "deleted"
