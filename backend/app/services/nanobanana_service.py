@@ -1,11 +1,12 @@
 import aiohttp
 import asyncio
 from typing import Optional
+from app.core.config import NANO_BANANA_API_URL
 
 class NanoBananaAPI:
     def __init__(self, api_key: str):
         self.api_key = api_key
-        self.base_url = 'https://api.nanobananaapi.ai/api/v1/nanobanana'
+        self.base_url = NANO_BANANA_API_URL
         self.headers = {
             'Authorization': f'Bearer {api_key}',
             'Content-Type': 'application/json'
@@ -54,8 +55,7 @@ class NanoBananaAPI:
                 raise Exception(f"API request failed with status {resp.status}: {text}")
             return await resp.json()
 
-    async def wait_for_completion(self,task_id: str,timeout: int = 60, interval: int = 3
-    ) -> str:
+    async def wait_for_completion(self,task_id: str,timeout: int = 60) -> str:
         loop = asyncio.get_event_loop()
         start_time = loop.time()
 
