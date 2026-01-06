@@ -10,38 +10,37 @@ router = Router()
 
 @router.message(Mode.text, F.text)
 async def text_handler(message: Message, state: FSMContext):
+    
     data = await state.get_data()
     chat_id = data.get("chat_id")
 
-
     msg = await message.answer("⏳ Генерирую текст...")
 
-    input_data = {
-        "prompt": message.text,
-        "max_length": 2048,
-        "temperature": 0.1
-    }
-    prompt = input_data["prompt"]
+    prompt = message.text
+
+
 
     try:
         sdk = Bytez(QWEN_API_TOKEN)
-
-        # choose Qwen2.5-7B-Instruct
-        model = sdk.model("Qwen/Qwen2.5-7B-Instruct")
+        model = sdk.model("microsoft/Phi-3-mini-4k-instruct")
 
         # send input to model
         output = model.run([
-        {
-            "role": "user",
-            "content": prompt
-        }
+            {
+                "role": "user",
+                "content": prompt,
+            }
         ])
 
-        content = output.output["content"]
-        text = content.strip()
+        if not output or not hasattr(output, "output") or output.output is None:
+            raise Exception("❌ Model javob bermadi")
+
+        result = output.output
+        text = result.get("content").strip()
 
         if len(text) > 4096:
             text = text[:4093] + "..."
+
 
         await msg.edit_text(text)
 

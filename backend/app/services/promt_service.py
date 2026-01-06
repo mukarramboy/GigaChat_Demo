@@ -3,7 +3,7 @@ from app.schemas.prompts import PromtResponse, PromptCreateRequest
 from app.database.query import save_prompt
 import aiohttp
 import aiohttp 
-from app.core.config import NANO_BANANA_API_KEY, GENERATE_URL, STATUS_URL
+from app.core.config import NANO_BANANA_API_KEY
 
 
 async def add_prompt(request: PromptCreateRequest, response: str) -> PromtResponse:
