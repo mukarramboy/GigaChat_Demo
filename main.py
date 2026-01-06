@@ -1,17 +1,9 @@
-from multiprocessing import Process
+import aiohttp, asyncio
 
-def cpu():
-    s = 0
-    for i in range(10**9):
-        s += i
-        
-    print("s=",s)
+async def test():
+    async with aiohttp.ClientSession() as session:
+        async with session.get("https://api.nanobanana.ai") as resp:
+            print(resp.status)
+            print(await resp.text())
 
-p1 = Process(target=cpu)
-p2 = Process(target=cpu)
-
-p1.start()
-p2.start()
-
-p1.join()
-p2.join()
+asyncio.run(test())

@@ -32,13 +32,22 @@ async def create_chat(user_id: int):
 async def save_prompt(chat_id: int, prompt_type: str, prompt: str, response: str):
     pool = await get_pool()
     async with pool.acquire() as conn:
-        await conn.execute(
+        row = await conn.fetchrow(
             """
             INSERT INTO prompts (chat_id, type, prompt, response)
             VALUES ($1, $2, $3, $4)
+            RETURNING id, chat_id, type, prompt, response, created_at
             """,
             chat_id, prompt_type, prompt, response
         )
+    return {
+        "id": row["id"],
+        "chat_id": row["chat_id"],
+        "type": row["type"],
+        "prompt": row["prompt"],
+        "response": row["response"],
+        "created_at": row["created_at"]
+    }
 
 
 async def get_user_chats(user_id: int):
