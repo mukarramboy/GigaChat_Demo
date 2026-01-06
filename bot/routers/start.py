@@ -10,7 +10,7 @@ from aiogram.types import (
 from aiogram.fsm.context import FSMContext
 
 from states import Mode
-from database.query import create_chat, save_user, save_prompt
+from database.query import create_chat, save_user, save_prompt, get_or_create_empty_chat
 
 router = Router()
 
@@ -23,7 +23,7 @@ def main_menu(user_id: int):
             [
                 KeyboardButton(
                     text ="🔗 Веб-версия",
-                    web_app=WebAppInfo(url=f"https://127.0.0.1:8000/api/v1/chats?user_id={user_id}")
+                    web_app=WebAppInfo(url=f"http://127.0.0.1:8000/api/v1/chats?user_id={user_id}")
                 )
             ]
         ],
@@ -38,7 +38,8 @@ async def start_handler(message: Message, state: FSMContext):
     user_id = message.from_user.id
 
     await save_user(user_id)
-    chat_id = await create_chat(user_id)
+    # Используем существующий пустой чат или создаем новый
+    chat_id, _ = await get_or_create_empty_chat(user_id)
 
     await state.update_data(chat_id=chat_id)
 
@@ -74,11 +75,14 @@ async def new_chat(message: Message, state: FSMContext):
     await state.clear()
     user_id = message.from_user.id
 
-    chat_id = await create_chat(user_id)
+    # Используем существующий пустой чат или создаем новый
+    chat_id, created = await get_or_create_empty_chat(user_id)
     await state.update_data(chat_id=chat_id)
 
+    msg_text = "🆕 Новый чат создан." if created else "✅ Переключено на пустой чат."
+
     await message.answer(
-        "🆕 Новый чат создан. Выбери режим:",
+        f"{msg_text} Выбери режим:",
         reply_markup=main_menu(user_id)
     )
 
