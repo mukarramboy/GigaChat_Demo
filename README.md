@@ -13,9 +13,22 @@ source env/bin/activate
 
 # 3) Установить зависимости
 pip install -r requirements.txt
+```
 
-# 4) Запустить приложение
+## Запустить приложение bot
+![Bot Results](docs/bot/screenshots/result_bot1.png)
+![](docs/bot/screenshots/result_bot2.png)
+```bash
+cd bot
 python3 main.py
+```
+
+
+## Запускать backend 
+![Backend Docs(Swagger)](docs/backend/screenshots/docs_api.png)
+```bash
+cd backend
+uvicorn app.main:app --reload
 ```
 
 ## Полезно знать

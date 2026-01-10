@@ -1,15 +1,21 @@
 from aiogram import Router, F
+from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 import os
 import replicate
 from states import Mode
 from config import REPLICATE_TOKEN
+from database.query import save_prompt
 
 os.environ["REPLICATE_API_TOKEN"] = REPLICATE_TOKEN
 router = Router()
 
 @router.message(Mode.text, F.text)
-async def text_handler(message: Message):
+async def text_handler(message: Message, state: FSMContext):
+    data = await state.get_data()
+    chat_id = data.get("chat_id")
+
+
     msg = await message.answer("⏳ Генерирую текст...")
 
     input_data = {
@@ -31,6 +37,14 @@ async def text_handler(message: Message):
             text = text[:4093] + "..."
 
         await msg.edit_text(text)
+
+        # ✅ DB’ga saqlash
+        await save_prompt(
+            chat_id=chat_id,
+            prompt_type="text",
+            prompt=message.text,
+            response=text
+        )
 
     except Exception as e:
         await msg.edit_text(f"❌ Ошибка при генерации: {str(e)}")

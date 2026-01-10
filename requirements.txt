@@ -1,5 +1,7 @@
-aiogram==3.4.1
-httpx
+aiogram
 python-dotenv
 replicate
 pillow
+asyncpg
+fastapi
+uvicorn
